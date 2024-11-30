@@ -1,12 +1,8 @@
 from flask import Blueprint, request, jsonify
-from services.adoptionServices import AdoptionService
+from services.adoption_service import AdoptionService
 
 adoption_bp = Blueprint("adoption", __name__)
 adoption_service = AdoptionService()
-
-# Function to check user login or signup
-def user_profile():
-    return {"message": "Please login or signup to access this service."}
 
 # Route to browse pets for adoption
 @adoption_bp.route('/pets', methods=['GET'])
@@ -28,9 +24,10 @@ def submit_adoption_request():
     data = request.json
     pet_id = data.get("pet_id")
     username = data.get("username")
-    quiz_result = data.get("quiz_result")
+    answers = data.get("answers")  # This is the list of answers from the quiz
 
-    result = adoption_service.submit_adoption_request(pet_id, username, quiz_result)
+    # Submit the adoption request only if the user passed the quiz
+    result = adoption_service.submit_adoption_request(pet_id, username, answers)
     return jsonify(result)
 
 # Route to check adoption status updates
@@ -40,4 +37,3 @@ def adoption_status_updates(adopter_id):
     if updates:
         return jsonify({"updates": updates})
     return jsonify({"message": "No new updates"})
-
