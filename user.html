@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Management</title>
+</head>
+<body>
+  <h1>User Management</h1>
+
+  <!-- Create User Section -->
+  <h2>Create User</h2>
+  <form id="createUserForm">
+    Username: <input type="text" id="createUsername" required><br>
+    Password: <input type="password" id="createPassword" required><br>
+    Pet Age (Optional): <input type="number" id="createPetAge"><br>
+    Pet Location (Optional): <input type="text" id="createPetLocation"><br>
+    <button type="button" onclick="createUser()">Create User</button>
+  </form>
+  <p id="createResult"></p>
+
+  <hr>
+
+  <!-- Edit User Section -->
+  <h2>Edit User</h2>
+  <form id="editUserForm">
+    Current Username: <input type="text" id="editUsername" required><br>
+    New Username (Optional): <input type="text" id="editNewUsername"><br>
+    New Password (Optional): <input type="password" id="editNewPassword"><br>
+    New Pet Age (Optional): <input type="number" id="editPetAge"><br>
+    New Pet Location (Optional): <input type="text" id="editPetLocation"><br>
+    <button type="button" onclick="editUser()">Edit User</button>
+  </form>
+  <p id="editResult"></p>
+
+  <hr>
+
+  <!-- Delete User Section -->
+  <h2>Delete User</h2>
+  <form id="deleteUserForm">
+    Username: <input type="text" id="deleteUsername" required><br>
+    <button type="button" onclick="deleteUser()">Delete User</button>
+  </form>
+  <p id="deleteResult"></p>
+
+  <script>
+    // Function to create a user
+    async function createUser() {
+      const data = {
+        username: document.getElementById("createUsername").value,
+        password: document.getElementById("createPassword").value,
+        pet: {
+          age: document.getElementById("createPetAge").value || null,
+          location: document.getElementById("createPetLocation").value || null
+        }
+      };
+      const response = await fetch("/user/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      const result = await response.json();
+      document.getElementById("createResult").textContent = result.message;
+    }
+
+    // Function to edit a user
+    async function editUser() {
+      const username = document.getElementById("editUsername").value;
+      const data = {
+        username: document.getElementById("editNewUsername").value || null,
+        password: document.getElementById("editNewPassword").value || null,
+        pet: {
+          age: document.getElementById("editPetAge").value || null,
+          location: document.getElementById("editPetLocation").value || null
+        }
+      };
+      const response = await fetch(`/user/edit/${username}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      const result = await response.json();
+      document.getElementById("editResult").textContent = result.message;
+    }
+
+    // Function to delete a user
+    async function deleteUser() {
+      const username = document.getElementById("deleteUsername").value;
+      const response = await fetch(`/user/delete/${username}`, {
+        method: "DELETE"
+      });
+      const result = await response.json();
+      document.getElementById("deleteResult").textContent = result.message;
+    }
+  </script>
+</body>
+</html>
