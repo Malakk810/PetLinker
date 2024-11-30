@@ -1,4 +1,4 @@
-class AdoptionService:
+class AdoptionQuizService:
     def __init__(self):
         self.questions = [
             "How much time can you dedicate to taking care of a pet daily?",
