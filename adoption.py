@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from services.adoptionServices import adoptionServices
+from services.adoptionServices import AdoptionService
 
 adoption_bp = Blueprint("adoption", __name__)
 adoption_service = AdoptionService()
