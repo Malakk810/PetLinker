@@ -1,63 +1,87 @@
 import pyodbc
 
-# Database connection function
-def get_db_connection():
-    conn = pyodbc.connect('DRIVER={ODBC Driver 18 for SQL Server};SERVER=FaridaAli\SQLEXPRESS;DATABASE=PetLinker;UID=flask_user;PWD=Flask!User1234;TrustServerCertificate=yes')
-    return conn
+class UserService:
+    def __init__(self):
+        self.db = self.get_db_connection()
 
-# Function to sign up a new user
-def signup_user(username, password):
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    def get_db_connection(self):
+        return pyodbc.connect(
+            'DRIVER={ODBC Driver 18 for SQL Server};'
+            'SERVER=FaridaAli\\SQLEXPRESS;'
+            'DATABASE=PetLinker;'
+            'UID=flask_user;'
+            'PWD=Flask!User1234;'
+            'TrustServerCertificate=yes'
+        )
 
-    # Check if username exists
-    cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
-    if cursor.fetchone():
-        conn.close()
-        return False  # Username already exists
+    def create_user(self, data):
+        username = data.get("username")
+        password = data.get("password")
+        if not username or not password:
+            return {"success": False, "message": "Username and password are required."}
+        
+        conn = self.db
+        cursor = conn.cursor()
 
-    # Insert new user with plain text password
-    cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
-    conn.commit()
-    conn.close()
-    return True  # Successfully signed up
+        # Check if username already exists
+        cursor.execute("SELECT 1 FROM users WHERE username = ?", (username,))
+        if cursor.fetchone():
+            return {"success": False, "message": "Username already exists."}
 
-# Function to login a user
-def login_user(username, password):
-    conn = get_db_connection()
-    cursor = conn.cursor()
+        # Insert user into the database
+        cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+        conn.commit()
+        return {"success": True, "message": "User created successfully."}
 
-    cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
-    user = cursor.fetchone()
+    def login_user(self, data):
+        username = data.get("username")
+        password = data.get("password")
+        if not username or not password:
+            return {"success": False, "message": "Username and password are required."}
 
-    if user and user[1] == password:  # Assuming password is in index 1
-        conn.close()
-        return True  # Login successful
+        conn = self.db
+        cursor = conn.cursor()
 
-    conn.close()
-    return False  # Invalid credentials
+        # Check if username and password match
+        cursor.execute("SELECT 1 FROM users WHERE username = ? AND password = ?", (username, password))
+        if cursor.fetchone():
+            return {"success": True, "message": "Login successful."}
+        return {"success": False, "message": "Invalid credentials."}
 
-# Function to edit user profile
-def edit_user_profile(username, field, new_value):
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    def edit_user_profile(self, username, data):
+        new_username = data.get("username")
+        new_password = data.get("password")
 
-    if field == 'username':
-        cursor.execute("UPDATE users SET username = ? WHERE username = ?", (new_value, username))
-    elif field == 'password':
-        cursor.execute("UPDATE users SET password = ? WHERE username = ?", (new_value, username))
-    
-    conn.commit()
-    conn.close()
+        conn = self.db
+        cursor = conn.cursor()
 
-# Function to delete user profile
-def delete_user_profile(username):
-    conn = get_db_connection()
-    cursor = conn.cursor()
+        # Check if user exists
+        cursor.execute("SELECT 1 FROM users WHERE username = ?", (username,))
+        if not cursor.fetchone():
+            return {"success": False, "message": "User not found."}
 
-    cursor.execute("DELETE FROM pets WHERE username = ?", (username,))
-    cursor.execute("DELETE FROM users WHERE username = ?", (username,))
-    conn.commit()
-    conn.close()
+        # Update user details
+        if new_username:
+            cursor.execute("UPDATE users SET username = ? WHERE username = ?", (new_username, username))
+        if new_password:
+            cursor.execute("UPDATE users SET password = ? WHERE username = ?", (new_password, username))
+
+        conn.commit()
+        return {"success": True, "message": "User updated successfully."}
+
+    def delete_user_profile(self, username):
+        conn = self.db
+        cursor = conn.cursor()
+
+        # Check if user exists
+        cursor.execute("SELECT 1 FROM users WHERE username = ?", (username,))
+        if not cursor.fetchone():
+            return {"success": False, "message": "User not found."}
+
+        # Delete user from the database
+        cursor.execute("DELETE FROM users WHERE username = ?", (username,))
+        conn.commit()
+        return {"success": True, "message": "User deleted successfully."}
+
 
 
