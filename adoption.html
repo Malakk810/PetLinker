@@ -20,11 +20,24 @@
         .pet button {
             margin-top: 10px;
         }
+        .quiz-container {
+            margin-top: 20px;
+        }
+        .quiz-container label {
+            display: block;
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
     <h1>Available Pets for Adoption</h1>
     <div id="pet-list"></div>
+
+    <h2>Adoption Quiz</h2>
+    <div class="quiz-container">
+        <div id="quiz-questions"></div>
+        <button onclick="submitAdoptionRequest()">Submit Adoption Request</button>
+    </div>
 
     <h2>Check Adoption Status</h2>
     <input type="text" id="adopter-id" placeholder="Enter Adopter ID">
@@ -32,8 +45,10 @@
     <div id="status-updates"></div>
 
     <script>
+        let quizAnswers = [];
+
         // Fetch available pets
-        fetch('/pets')
+        fetch('/adoption/pets')
             .then(response => response.json())
             .then(pets => {
                 const petList = document.getElementById('pet-list');
@@ -41,48 +56,85 @@
                     const petDiv = document.createElement('div');
                     petDiv.className = 'pet';
                     petDiv.innerHTML = `
-                        <h3>${pet.name} (${pet.breed})</h3>
-                        <button onclick="viewPet(${pet.id})">View Details</button>
+                        <h3>${pet.Name} (${pet.Type_})</h3>
+                        <button onclick="viewPet(${pet.Licence_number})">View Details</button>
                     `;
                     petList.appendChild(petDiv);
                 });
             });
 
-        // View pet details
-        function viewPet(petId) {
-            fetch(`/pets/${petId}`)
-                .then(response => response.json())
-                .then(pet => {
-                    if (pet) {
-                        alert(`Name: ${pet.name}\nBreed: ${pet.breed}\nAge: ${pet.age}\nStatus: ${pet.status}`);
-                        const adopt = confirm("Would you like to adopt this pet?");
-                        if (adopt) {
-                            submitAdoptionRequest(petId);
-                        }
-                    } else {
-                        alert("Pet not found!");
-                    }
+        // Render quiz questions
+        function renderQuiz() {
+            const questions = [
+                "How much time can you dedicate to taking care of a pet daily?",
+                "How familiar are you with pet health and care?",
+                "Are you willing to adopt a pet from a shelter?",
+                "Do you have experience with training pets?",
+                "Do you have a pet care emergency plan?"
+            ];
+            const options = [
+                ["1-2 hours", "3-4 hours", "5+ hours", "None"],
+                ["None", "Some experience", "Moderate experience", "Expert"],
+                ["Yes", "No", "Not sure", "Already adopted from a shelter"],
+                ["None", "Basic training", "Advanced training", "Expert trainer"],
+                ["No", "Yes, I have a plan", "I am considering one", "Not sure"]
+            ];
+
+            const quizQuestionsDiv = document.getElementById('quiz-questions');
+            quizQuestionsDiv.innerHTML = '';  // Clear existing questions
+            for (let i = 0; i < questions.length; i++) {
+                const question = document.createElement('div');
+                question.innerHTML = `<label>${questions[i]}</label>`;
+                options[i].forEach((option, index) => {
+                    question.innerHTML += `
+                        <input type="radio" name="question-${i}" value="${index + 1}" onclick="collectAnswer(${i}, ${index + 1})"> ${option}<br>
+                    `;
                 });
+                quizQuestionsDiv.appendChild(question);
+            }
         }
 
-        // Submit adoption request
-        function submitAdoptionRequest(petId) {
-            const username = prompt("Enter your username:");
-            if (!username) return;
-            
-            const quizResult = confirm("Did you pass the adoption quiz?");
-            const data = { pet_id: petId, username: username, quiz_result: quizResult };
+        // Collect user's answers to the quiz
+        function collectAnswer(questionIndex, selectedValue) {
+            quizAnswers[questionIndex] = selectedValue;
+        }
 
-            fetch('/adopt', {
+        // Submit adoption request with quiz answers
+        function submitAdoptionRequest() {
+            const petId = prompt("Enter the pet ID you want to adopt:");
+            const username = prompt("Enter your username:");
+            if (!username || !quizAnswers.every(ans => ans !== undefined)) {
+                alert("Please answer all the questions in the quiz.");
+                return;
+            }
+
+            const data = { pet_id: petId, username: username, answers: quizAnswers };
+
+            fetch('/adoption/adopt', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             })
             .then(response => response.json())
             .then(result => alert(result.message))
             .catch(error => alert("Error: " + error));
+        }
+
+        // View pet details
+        function viewPet(petId) {
+            fetch(`/adoption/pets/${petId}`)
+                .then(response => response.json())
+                .then(pet => {
+                    if (pet) {
+                        alert(`Name: ${pet.Name}\nType: ${pet.Type_}\nHealth Condition: ${pet.Health_condition}\nStatus: ${pet.Status_}`);
+                        const adopt = confirm("Would you like to adopt this pet?");
+                        if (adopt) {
+                            renderQuiz();
+                        }
+                    } else {
+                        alert("Pet not found!");
+                    }
+                });
         }
 
         // Check adoption status
@@ -93,7 +145,7 @@
                 return;
             }
 
-            fetch(`/adoption-status/${adopterId}`)
+            fetch(`/adoption/adoption-status/${adopterId}`)
                 .then(response => response.json())
                 .then(data => {
                     const statusDiv = document.getElementById("status-updates");
