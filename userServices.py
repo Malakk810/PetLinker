@@ -1,5 +1,5 @@
 import pyodbc as pydb
-from flask import jsonify
+from flask import jsonify, redirect, url_for, flash
 
 class UserService:
     def get_db_connection(self):
@@ -14,17 +14,18 @@ class UserService:
         conn_str = ';'.join([f'{key}={value}' for key, value in DB_CONFIG.items()])
         return pydb.connect(conn_str)
 
-    def create_user(self, data):
+    def create_user(self, data, pet_data):
         try:
             username = data.get('username')
             password = data.get('password')
-            pet_data = data.get('pet')
 
             if not username or not password:
-                return jsonify({'error': 'Username and password are required'}), 400
+                flash('Username and password are required', 'error')
+                return redirect(url_for('user.create_user'))
 
             if len(password) < 8 or not any(c.isdigit() for c in password) or not any(c.isalpha() for c in password):
-                return jsonify({'error': 'Password must be at least 8 characters, include a letter and a number'}), 400
+                flash('Password must be at least 8 characters long, including a letter and a number', 'error')
+                return redirect(url_for('user.create_user'))
 
             conn = self.get_db_connection()
             cursor = conn.cursor()
@@ -32,72 +33,62 @@ class UserService:
             # Check if username exists
             cursor.execute("SELECT 1 FROM users WHERE username = ?", username)
             if cursor.fetchone():
-                return jsonify({'error': 'Username already exists'}), 400
+                flash('Username already exists', 'error')
+                return redirect(url_for('user.create_user'))
 
             # Insert user into database
             cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
 
             # Insert pet details if provided
             if pet_data:
-                pet_age = pet_data.get('age')
-                pet_location = pet_data.get('location')
-                pet_breed = pet_data.get('breed')
-                pet_history = pet_data.get('history')
-
-                if pet_age is None or pet_age < 0 or not pet_location or not pet_breed or not pet_history:
-                    return jsonify({'error': 'Invalid pet details'}), 400
-
                 cursor.execute(
                     "INSERT INTO pets (username, age, location, breed, history) VALUES (?, ?, ?, ?, ?)",
-                    (username, pet_age, pet_location, pet_breed, pet_history),
+                    (username, pet_data['age'], pet_data['location'], pet_data['breed'], pet_data['history']),
                 )
 
             conn.commit()
-            return jsonify({'message': 'User profile created successfully!'}), 201
+            flash('User profile created successfully!', 'success')
+            return redirect(url_for('user.create_user'))
 
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            flash(f'Error: {str(e)}', 'error')
+            return redirect(url_for('user.create_user'))
 
         finally:
             conn.close()
 
-    def edit_user_profile(self, username, data):
+    def edit_user_profile(self, username, data, pet_data):
         try:
-            new_username = data.get('new_username')
-            new_password = data.get('new_password')
-            new_pet_data = data.get('pet')
-
             conn = self.get_db_connection()
             cursor = conn.cursor()
 
-            # Update username
+            # Update username and password if provided
+            new_username = data.get('new_username')
+            new_password = data.get('new_password')
+
             if new_username:
                 cursor.execute("SELECT 1 FROM users WHERE username = ?", new_username)
                 if cursor.fetchone():
-                    return jsonify({'error': 'New username already exists'}), 400
+                    flash('New username already exists', 'error')
+                    return redirect(url_for('user.edit_user_profile', username=username))
                 cursor.execute("UPDATE users SET username = ? WHERE username = ?", (new_username, username))
                 username = new_username
 
-            # Update password
             if new_password and len(new_password) >= 8 and any(c.isdigit() for c in new_password) and any(c.isalpha() for c in new_password):
                 cursor.execute("UPDATE users SET password = ? WHERE username = ?", (new_password, username))
 
             # Update pet details if provided
-            if new_pet_data:
-                if 'age' in new_pet_data:
-                    cursor.execute("UPDATE pets SET age = ? WHERE username = ?", (new_pet_data['age'], username))
-                if 'location' in new_pet_data:
-                    cursor.execute("UPDATE pets SET location = ? WHERE username = ?", (new_pet_data['location'], username))
-                if 'breed' in new_pet_data:
-                    cursor.execute("UPDATE pets SET breed = ? WHERE username = ?", (new_pet_data['breed'], username))
-                if 'history' in new_pet_data:
-                    cursor.execute("UPDATE pets SET history = ? WHERE username = ?", (new_pet_data['history'], username))
+            if pet_data:
+                cursor.execute("UPDATE pets SET age = ?, location = ?, breed = ?, history = ? WHERE username = ?",
+                               (pet_data['age'], pet_data['location'], pet_data['breed'], pet_data['history'], username))
 
             conn.commit()
-            return jsonify({'message': 'Profile updated successfully!'}), 200
+            flash('Profile updated successfully!', 'success')
+            return redirect(url_for('user.edit_user_profile', username=username))
 
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            flash(f'Error: {str(e)}', 'error')
+            return redirect(url_for('user.edit_user_profile', username=username))
 
         finally:
             conn.close()
@@ -113,10 +104,13 @@ class UserService:
             cursor.execute("DELETE FROM users WHERE username = ?", username)
 
             conn.commit()
-            return jsonify({'message': 'User profile deleted successfully!'}), 200
+            flash('User profile deleted successfully!', 'success')
+            return redirect(url_for('user.create_user'))
 
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            flash(f'Error: {str(e)}', 'error')
+            return redirect(url_for('user.create_user'))
 
         finally:
             conn.close()
+
