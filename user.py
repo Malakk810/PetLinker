@@ -1,52 +1,35 @@
-from flask import Flask, render_template, request, redirect, url_for
-from service import signup_user, login_user, edit_user_profile, delete_user_profile
+from flask import Blueprint, request, jsonify
+from services.user_service import UserService
 
-app = Flask(__name__)
+user_bp = Blueprint('user', __name__)
+user_service = UserService()
 
-@app.route('/login', methods=['GET', 'POST'])
-def login_signup():
-    if request.method == 'POST':
-        action = request.form.get('action')
-        username = request.form['username']
-        password = request.form['password']
+# User Registration Route (Create new account)
+@user_bp.route("/user/register", methods=["POST"])
+def register_user():
+    data = request.json
+    result = user_service.create_user(data)
+    return jsonify(result), 201 if result["success"] else 400
 
-        if action == 'signup':
-            # Sign-up Logic
-            if signup_user(username, password):
-                return redirect(url_for('login_signup'))  # Redirect to the same form
-            else:
-                return render_template('login_signup_profile.html', error="Username already exists!", form_title="Sign Up")
+# User Login Route
+@user_bp.route("/user/login", methods=["POST"])
+def login_user():
+    data = request.json
+    result = user_service.login_user(data)
+    return jsonify(result), 200 if result["success"] else 400
 
-        elif action == 'login':
-            # Login Logic
-            if login_user(username, password):
-                return redirect(url_for('edit_profile', username=username))  # Redirect to profile editing page
-            else:
-                return render_template('login_signup_profile.html', error="Invalid username or password.", form_title="Log In")
+# Edit Account Route
+@user_bp.route("/user/edit/<string:username>", methods=["PUT"])
+def edit_user(username):
+    data = request.json
+    result = user_service.edit_user_profile(username, data)
+    return jsonify(result), 200 if result["success"] else 400
 
-    return render_template('login_signup_profile.html', form_title="Log In")
-
-@app.route('/edit_profile/<username>', methods=['GET', 'POST'])
-def edit_profile(username):
-    if request.method == 'POST':
-        new_username = request.form['new_username']
-        new_password = request.form['new_password']
-
-        if new_username:
-            edit_user_profile(username, 'username', new_username)
-            username = new_username
-
-        if new_password:
-            edit_user_profile(username, 'password', new_password)
-
-        return redirect(url_for('edit_profile', username=username))
-
-    return render_template('login_signup_profile.html', username=username, form_title="Edit Profile")
-
-@app.route('/delete_profile/<username>', methods=['POST'])
-def delete_profile(username):
-    delete_user_profile(username)
-    return redirect(url_for('login_signup'))  # Redirect back to login/signup page
+# Delete Account Route
+@user_bp.route("/user/delete/<string:username>", methods=["DELETE"])
+def delete_user(username):
+    result = user_service.delete_user_profile(username)
+    return jsonify(result), 200 if result["success"] else 400
 
 
 
