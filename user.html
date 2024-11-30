@@ -3,38 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create/Edit User Profile</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>User Authentication</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
+
     <div class="container">
-        <h1>{{ title }}</h1>
-        <form action="{{ form_action }}" method="POST">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" value="{{ username }}" required>
+        <!-- Title depending on the action -->
+        <h2>{{ form_title }}</h2>
 
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
+        <!-- Form for SignUp and Login -->
+        <form method="POST" action="{{ url_for('login_signup') }}">
+            <input type="text" name="username" placeholder="Username" required><br>
+            <input type="password" name="password" placeholder="Password" required><br>
 
-            <label for="pet">Do you have a pet? (Yes/No)</label>
-            <input type="text" id="pet" name="pet" value="{{ pet }}" required>
-
-            <div id="petDetails" {% if pet_details_display == "none" %} style="display: none;" {% else %} style="display: block;" {% endif %}>
-                <label for="age">Pet Age:</label>
-                <input type="number" id="age" name="age" value="{{ age }}">
-
-                <label for="location">Pet Location:</label>
-                <input type="text" id="location" name="location" value="{{ location }}">
-
-                <label for="breed">Pet Breed:</label>
-                <input type="text" id="breed" name="breed" value="{{ breed }}">
-
-                <label for="history">Pet History:</label>
-                <input type="text" id="history" name="history" value="{{ history }}">
+            <!-- Action buttons: Sign Up or Log In -->
+            <div class="buttons">
+                <button type="submit" name="action" value="signup">Sign Up</button>
+                <button type="submit" name="action" value="login">Log In</button>
             </div>
-
-            <button type="submit">{{ button_text }}</button>
         </form>
+
+        {% if error %}
+            <p style="color:red;">{{ error }}</p>
+        {% endif %}
+
+        {% if username %}
+            <!-- Profile Editing Form -->
+            <h3>Edit Profile</h3>
+            <form method="POST" action="{{ url_for('edit_profile', username=username) }}">
+                <input type="text" name="new_username" placeholder="New Username" value="{{ username }}"><br>
+                <input type="password" name="new_password" placeholder="New Password"><br>
+                <button type="submit">Update Profile</button>
+            </form>
+
+            <!-- Profile Deletion Form -->
+            <h3>Delete Profile</h3>
+            <form method="POST" action="{{ url_for('delete_profile', username=username) }}">
+                <button type="submit" style="background-color:red;">Delete Account</button>
+            </form>
+        {% endif %}
     </div>
+
 </body>
 </html>
+
