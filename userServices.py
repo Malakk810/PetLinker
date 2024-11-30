@@ -60,3 +60,4 @@ def delete_user_profile(username):
     conn.commit()
     conn.close()
 
+
