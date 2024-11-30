@@ -1,20 +1,41 @@
 from flask import Blueprint, request, jsonify
-from services.marketplace_service import MarketplaceService
+from services.pet_activity_service import PetActivityService
 
-marketplace_bp = Blueprint('marketplace', __name__)
-marketplace_service = MarketplaceService()
+# Create the blueprint for pet activity routes
+pet_activity_bp = Blueprint("pet_activity", __name__)
+activity_service = PetActivityService()
 
-@marketplace_bp.route('/initialize', methods=['POST'])
-def initialize():
-    marketplace_service.initialize_database()
-    marketplace_service.insert_sample_data()
-    return jsonify({"message": "Marketplaces table initialized with sample data."}), 201
+@pet_activity_bp.route("/activities", methods=["GET"])
+def get_pet_activities():
+    location = request.args.get('location')  # Get location from query parameters
+    activity_type = request.args.get('activity_type')  # Optionally filter by activity type
 
-@marketplace_bp.route('/', methods=['GET'])
-def get_marketplaces():
-    location = request.args.get('location', '').strip()
+    # Fetch pet activities from the service
+    activities = activity_service.find_pet_activities(location, activity_type)
+    
+    # Check if the result is an error message
+    if isinstance(activities, str):  # If it’s an error message
+        return jsonify({"message": activities}), 404
+    
+    return jsonify(activities)
 
-    marketplaces = marketplace_service.get_pet_marketplaces(location)
-    if isinstance(marketplaces, str):  # Error message
-        return jsonify({"message": marketplaces}), 404
-    return jsonify(marketplaces), 200
+@pet_activity_bp.route("/activities/upcoming", methods=["GET"])
+def get_upcoming_events():
+    location = request.args.get('location')  # Get location from query parameters
+
+    if not location:
+        return jsonify({"message": "Location is required to get upcoming events."}), 400
+
+    # Fetch upcoming events from the service
+    events = activity_service.find_upcoming_events(location)
+    
+    if isinstance(events, str):  # If it’s an error message
+        return jsonify({"message": events}), 404
+    
+    return jsonify(events)
+
+@pet_activity_bp.route("/activities/sample", methods=["POST"])
+def insert_sample_activities():
+    # Insert the sample data into the database
+    activity_service.insert_sample_activities()
+    return jsonify({"message": "Sample pet activities inserted successfully!"}), 201
