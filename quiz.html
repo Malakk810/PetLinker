@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pet Adoption Quiz</title>
+  <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Pet Adoption Quiz</h1>
+    <form id="adoptionQuizForm">
+      <div id="quiz-container"></div>
+      <button type="submit">Submit Quiz</button>
+    </form>
+    <div id="result" class="hidden"></div>
+  </div>
+
+  <script>
+    const questions = [
+      "How much time can you dedicate to taking care of a pet daily?",
+      "How familiar are you with pet health and care?",
+      "Are you willing to adopt a pet from a shelter?",
+      "Do you have experience with training pets?",
+      "Do you have a pet care emergency plan?"
+    ];
+
+    const options = [
+      ["1-2 hours", "3-4 hours", "5+ hours", "None"],
+      ["None", "Some experience", "Moderate experience", "Expert"],
+      ["Yes", "No", "Not sure", "Already adopted from a shelter"],
+      ["None", "Basic training", "Advanced training", "Expert trainer"],
+      ["No", "Yes, I have a plan", "I am considering one", "Not sure"]
+    ];
+
+    const quizContainer = document.getElementById("quiz-container");
+
+    questions.forEach((question, index) => {
+      const questionDiv = document.createElement("div");
+      questionDiv.classList.add("question-block");
+      questionDiv.innerHTML = `<p>${question}</p>`;
+      options[index].forEach((option, optionIndex) => {
+        questionDiv.innerHTML += `
+          <label>
+            <input type="radio" name="question${index}" value="${optionIndex + 1}" required>
+            ${option}
+          </label>
+          <br>
+        `;
+      });
+      quizContainer.appendChild(questionDiv);
+    });
+
+    document.getElementById("adoptionQuizForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      const answers = [];
+      questions.forEach((_, index) => answers.push(parseInt(formData.get(`question${index}`))));
+
+      const response = await fetch(`/adoption/quiz/username`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ answers })
+      });
+      const result = await response.json();
+      document.getElementById("result").textContent = result.message;
+      document.getElementById("result").classList.remove("hidden");
+    });
+  </script>
+</body>
+</html>
