@@ -19,7 +19,7 @@
             <label for="pet">Do you have a pet? (Yes/No)</label>
             <input type="text" id="pet" name="pet" value="{{ pet }}" required>
 
-            <div id="petDetails" style="display:{{ pet_details_display }}">
+            <div id="petDetails" {% if pet_details_display == "none" %} style="display: none;" {% else %} style="display: block;" {% endif %}>
                 <label for="age">Pet Age:</label>
                 <input type="number" id="age" name="age" value="{{ age }}">
 
