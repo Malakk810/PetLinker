@@ -1,32 +1,46 @@
+import pyodbc
+
 class AdoptionService:
     def __init__(self):
-        # Mock database structure
-        self.db = Database()  # Use your database implementation
+        self.conn = pyodbc.connect(
+            'DRIVER={ODBC Driver 18 for SQL Server};'
+            'SERVER=FaridaAli\\SQLEXPRESS;'
+            'DATABASE=PetLinker;'
+            'UID=flask_user;'
+            'PWD=Flask!User1234;'
+            'TrustServerCertificate=yes'
+        )
+        self.cursor = self.conn.cursor()
 
-    def get_available_pets(self):
-        query = "SELECT * FROM pets WHERE status = 'Available'"
-        pets = self.db.fetch_all(query)
-        return pets
+    def get_all_pets(self):
+        self.cursor.execute("SELECT pet_id, name, breed, status FROM pets WHERE status='Available'")
+        pets = self.cursor.fetchall()
+        return [{"id": row[0], "name": row[1], "breed": row[2]} for row in pets]
 
-    def get_pet_profile(self, pet_id):
-        query = "SELECT * FROM pets WHERE pet_id = ?"
-        pet = self.db.fetch_one(query, [pet_id])
-        return pet
+    def get_pet_by_id(self, pet_id):
+        self.cursor.execute("SELECT * FROM pets WHERE pet_id=?", pet_id)
+        pet = self.cursor.fetchone()
+        if pet:
+            return {
+                "id": pet[0],
+                "name": pet[1],
+                "breed": pet[2],
+                "age": pet[3],
+                "status": pet[4]
+            }
+        return None
 
-    def take_adoption_quiz(self, answers):
-        # Mock quiz logic
-        correct_answers = [2, 3, 1, 2]  # Example correct answers
-        score = sum(1 for i, answer in enumerate(answers) if answer == correct_answers[i])
-        return score >= 3
-
-    def submit_adoption_request(self, username, pet_id, quiz_result):
+    def submit_adoption_request(self, pet_id, username, quiz_result):
         if quiz_result:
-            # Update pet status
-            self.db.execute("UPDATE pets SET status = 'Adopted' WHERE pet_id = ?", [pet_id])
-            # Update user adoption status
-            self.db.execute("UPDATE users SET adoption_status = 'Adopter' WHERE username = ?", [username])
+            self.cursor.execute("UPDATE pets SET status='Adopted' WHERE pet_id=?", pet_id)
+            self.cursor.execute("UPDATE UserProfile SET status='Adopter' WHERE username=?", username)
+            self.conn.commit()
+            return {"message": "Adoption request approved!"}
+        return {"message": "Adoption request rejected"}, 400
 
-    def get_adoption_status(self, username):
-        query = "SELECT adoption_status FROM users WHERE username = ?"
-        status = self.db.fetch_one(query, [username])
-        return status if status else "No adoption status available."
+    def get_adoption_updates(self, adopter_id):
+        self.cursor.execute("SELECT * FROM adoption_updates WHERE adopter_id=?", adopter_id)
+        updates = self.cursor.fetchall()
+        if updates:
+            return [{"update_id": row[0], "message": row[1], "date": row[2]} for row in updates]
+        return []
