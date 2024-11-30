@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetLinker - Pet Activities</title>
+    <link rel="stylesheet" href="activities.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Welcome to PetLinker - Pet Activities</h1>
+            <p>Explore pet-friendly activities near you</p>
+        </header>
+
+        <section class="search-section">
+            <input type="text" id="activity-location" placeholder="Enter location (e.g., Cairo)">
+            <button onclick="getActivities()">Search Activities</button>
+        </section>
+
+        <section id="activity-list" class="activity-list">
+            <!-- Pet activities will be listed here -->
+        </section>
+    </div>
+
+    <script>
+        function getActivities() {
+            const location = document.getElementById('activity-location').value;
+            const url = location ? `/api/activities/activities?location=${location}` : '/api/activities/activities';
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => displayActivities(data))
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Something went wrong!');
+                });
+        }
+
+        function displayActivities(activities) {
+            const activityList = document.getElementById('activity-list');
+            activityList.innerHTML = '';  // Clear previous results
+
+            if (Array.isArray(activities) && activities.length > 0) {
+                activities.forEach(activity => {
+                    const activityCard = document.createElement('div');
+                    activityCard.classList.add('activity-card');
+
+                    activityCard.innerHTML = `
+                        <h3>${activity.activity_name}</h3>
+                        <p><strong>Type:</strong> ${activity.activity_type}</p>
+                        <p><strong>Location:</strong> ${activity.location}</p>
+                        <p><strong>Date/Time:</strong> ${activity.date_time}</p>
+                        <p><strong>Description:</strong> ${activity.description}</p>
+                        <p><strong>Contact:</strong> ${activity.contact_info}</p>
+                        <p><strong>Rating:</strong> ${activity.rating} / 5</p>
+                    `;
+
+                    activityList.appendChild(activityCard);
+                });
+            } else {
+                activityList.innerHTML = '<p>No pet activities found. Try expanding your search radius.</p>';
+            }
+        }
+    </script>
+</body>
+</html>
