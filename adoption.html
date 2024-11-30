@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adoption Management</title>
+</head>
+<body>
+  <h1>Adoption Management</h1>
+
+  <!-- Browse Pets Section -->
+  <h2>Browse Pets for Adoption</h2>
+  <button type="button" onclick="browsePets()">Browse Pets</button>
+  <ul id="petList"></ul>
+
+  <hr>
+
+  <!-- Pet Profile Section -->
+  <h2>Pet Profile</h2>
+  <form id="viewPetForm">
+    Pet ID: <input type="number" id="petIdInput" required><br>
+    <button type="button" onclick="viewPet()">View Pet Profile</button>
+  </form>
+  <div id="petProfile"></div>
+
+  <hr>
+
+  <!-- Adoption Quiz Section -->
+  <h2>Take Adoption Quiz</h2>
+  <form id="adoptionQuizForm">
+    Username: <input type="text" id="quizUsername" required><br>
+    Pet ID: <input type="number" id="quizPetId" required><br>
+    Quiz Answers (Comma-separated): <input type="text" id="quizAnswers" required><br>
+    <button type="button" onclick="takeAdoptionQuiz()">Submit Quiz</button>
+  </form>
+  <p id="quizResult"></p>
+
+  <hr>
+
+  <!-- Adoption Status Section -->
+  <h2>Check Adoption Status</h2>
+  <form id="checkStatusForm">
+    Username: <input type="text" id="statusUsername" required><br>
+    <button type="button" onclick="checkStatus()">Check Status</button>
+  </form>
+  <p id="statusResult"></p>
+
+  <script>
+    // Function to browse available pets
+    async function browsePets() {
+      const response = await fetch("/adoption/browse");
+      const result = await response.json();
+      const petList = document.getElementById("petList");
+      petList.innerHTML = ""; // Clear previous results
+      result.pets.forEach((pet) => {
+        const li = document.createElement("li");
+        li.textContent = `Pet ID: ${pet.pet_id}, Name: ${pet.name}, Status: ${pet.status}`;
+        petList.appendChild(li);
+      });
+    }
+
+    // Function to view a specific pet's profile
+    async function viewPet() {
+      const petId = document.getElementById("petIdInput").value;
+      const response = await fetch(`/adoption/view/${petId}`);
+      const result = await response.json();
+      document.getElementById("petProfile").textContent = result.pet
+        ? `Name: ${result.pet.name}, Status: ${result.pet.status}`
+        : result.message;
+    }
+
+    // Function to submit the adoption quiz
+    async function takeAdoptionQuiz() {
+      const username = document.getElementById("quizUsername").value;
+      const petId = document.getElementById("quizPetId").value;
+      const answers = document.getElementById("quizAnswers").value.split(",").map(Number);
+      const response = await fetch(`/adoption/quiz/${username}/${petId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ quiz_answers: answers })
+      });
+      const result = await response.json();
+      document.getElementById("quizResult").textContent = result.message;
+    }
+
+    // Function to check the adoption status of a user
+    async function checkStatus() {
+      const username = document.getElementById("statusUsername").value;
+      const response = await fetch(`/adoption/status/${username}`);
+      const result = await response.json();
+      document.getElementById("statusResult").textContent = result.status;
+    }
+  </script>
+</body>
+</html>
