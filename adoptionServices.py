@@ -50,9 +50,9 @@ class AdoptionService:
         else:
             return {"message": "Adoption request rejected. Please pass the quiz to adopt."}, 400
 
-    # def get_adoption_updates(self, adopter_id):
-    #     self.cursor.execute("SELECT * FROM adoption_updates WHERE username=?", adopter_id)
-    #     updates = self.cursor.fetchall()
-    #     if updates:
-    #         return [{"update_id": row[0], "message": row[1], "date": row[2]} for row in updates]
-    #     return []
+    def get_adoption_updates(self, adopter_id):
+        self.cursor.execute("SELECT * FROM adoption_updates WHERE username=?", adopter_id)
+        updates = self.cursor.fetchall()
+        if updates:
+            return [{"update_id": row[0], "message": row[1], "date": row[2]} for row in updates]
+        return []
