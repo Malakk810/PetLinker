@@ -1,11 +1,11 @@
 class AdoptionQuizService:
     def __init__(self):
         self.questions = [
-            "How much time can you dedicate to taking care of a pet daily?",
-            "How familiar are you with pet health and care?",
+            "How much time do you plan to spend with your pet?",
+            "Do you have any experinace in taking care of a pet?",
             "Are you willing to adopt a pet from a shelter?",
-            "Do you have experience with training pets?",
-            "Do you have a pet care emergency plan?",
+            "Have you ever experienced pet training?",
+            "If you are going somewhere and pets are not allowed, do you have an alternative plan?",
         ]
         self.options = [
             ["1-2 hours", "3-4 hours", "5+ hours", "None"],
@@ -16,7 +16,7 @@ class AdoptionQuizService:
         ]
         self.correct_answers = [2, 2, 0, 2, 1]  # Expected correct indices
 
-    def ask_adoption_quiz(self, username, answers):
+    def ask_adoption_quiz(self, answers):
         score = 0
         for i, answer in enumerate(answers):
             if answer - 1 == self.correct_answers[i]:
@@ -25,7 +25,7 @@ class AdoptionQuizService:
                     return True
         return False
 
-    # def choose_adoption(self, username):
+    # def choose_adoption(self):
     #     # Assume the user opts to take the quiz
     #     # This could involve other business logic if required.
     #     return True
