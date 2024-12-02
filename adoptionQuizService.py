@@ -24,8 +24,3 @@ class AdoptionQuizService:
                 if score >= 3:
                     return True
         return False
-
-    # def choose_adoption(self):
-    #     # Assume the user opts to take the quiz
-    #     # This could involve other business logic if required.
-    #     return True
