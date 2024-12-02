@@ -41,21 +41,18 @@ class AdoptionService:
         return None
 
     def submit_adoption_request(self, pet_id, username, answers):
-        quiz_result = self.quiz_service.ask_adoption_quiz(answers)
-        if quiz_result:  # Only proceed with adoption if the quiz is passed
-            # Update pet status to 'Adopted'
+        quiz_result = self.quiz_service.ask_adoption_quiz(self, username, answers))
+        if quiz_result:
             self.cursor.execute("UPDATE Pets SET Status_='Adopted' WHERE Licence_number=?", pet_id)
-            # Optionally, update user profile to show adopter status
-            # self.cursor.execute("UPDATE UserProfiles SET status='Adopter' WHERE username=?", username)
+            self.cursor.execute("UPDATE UserProfiles SET status='Adopter' WHERE username=?", username)
             self.conn.commit()
             return {"message": "Adoption request approved!"}
         else:
             return {"message": "Adoption request rejected. Please pass the quiz to adopt."}, 400
 
-    # Get adoption status updates for an adopter
-    def get_adoption_updates(self, adopter_id):
-        self.cursor.execute("SELECT * FROM adoption_updates WHERE username=?", adopter_id)
-        updates = self.cursor.fetchall()
-        if updates:
-            return [{"update_id": row[0], "message": row[1], "date": row[2]} for row in updates]
-        return []
+    # def get_adoption_updates(self, adopter_id):
+    #     self.cursor.execute("SELECT * FROM adoption_updates WHERE username=?", adopter_id)
+    #     updates = self.cursor.fetchall()
+    #     if updates:
+    #         return [{"update_id": row[0], "message": row[1], "date": row[2]} for row in updates]
+    #     return []
