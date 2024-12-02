@@ -6,12 +6,7 @@ class UserService:
 
     def get_db_connection(self):
         return pyodbc.connect(
-            'DRIVER={ODBC Driver 18 for SQL Server};'
-            'SERVER=FaridaAli\\SQLEXPRESS;'
-            'DATABASE=PetLinker;'
-            'UID=flask_user;'
-            'PWD=Flask!User1234;'
-            'TrustServerCertificate=yes'
+conn = pyodbc.connect('DRIVER={ODBC Driver 18 for SQL Server};SERVER=FaridaAli\SQLEXPRESS;DATABASE=PetLinker;UID=flask_user;PWD=Flask!User1234;TrustServerCertificate=yes')
         )
 
     def create_user(self, data):
