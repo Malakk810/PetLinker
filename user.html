@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Management</title>
+  <link rel="stylesheet" href="static/user_style.css">
+</head>
+<body>
+  <h1>User Management System</h1>
+
+  <!-- Registration Form -->
+  <h2>Create New Account</h2>
+  <form id="registerForm">
+    Username: <input type="text" id="regUsername" required><br>
+    Password: <input type="password" id="regPassword" required><br>
+    <button type="button" onclick="registerUser()">Register</button>
+  </form>
+  <p id="registerResult"></p>
+
+  <hr>
+
+  <!-- Login Form -->
+  <h2>Login</h2>
+  <form id="loginForm">
+    Username: <input type="text" id="loginUsername" required><br>
+    Password: <input type="password" id="loginPassword" required><br>
+    <button type="button" onclick="loginUser()">Login</button>
+  </form>
+  <p id="loginResult"></p>
+
+  <hr>
+
+  <!-- Edit Account Form -->
+  <h2>Edit Account</h2>
+  <form id="editForm">
+    Username: <input type="text" id="editUsername" required><br>
+    New Username: <input type="text" id="newUsername"><br>
+    New Password: <input type="password" id="newPassword"><br>
+    <button type="button" onclick="editUser()">Edit Account</button>
+  </form>
+  <p id="editResult"></p>
+
+  <hr>
+
+  <!-- Delete Account Form -->
+  <h2>Delete Account</h2>
+  <form id="deleteForm">
+    Username: <input type="text" id="deleteUsername" required><br>
+    <button type="button" onclick="deleteUser()">Delete Account</button>
+  </form>
+  <p id="deleteResult"></p>
+
+  <script>
+    // Function to register user
+    async function registerUser() {
+      const username = document.getElementById("regUsername").value;
+      const password = document.getElementById("regPassword").value;
+      const result = await fetch("/user/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+      const response = await result.json();
+      document.getElementById("registerResult").textContent = response.message;
+    }
+
+    // Function to login user
+    async function loginUser() {
+      const username = document.getElementById("loginUsername").value;
+      const password = document.getElementById("loginPassword").value;
+      const result = await fetch("/user/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+      const response = await result.json();
+      document.getElementById("loginResult").textContent = response.message;
+    }
+
+    // Function to edit user
+    async function editUser() {
+      const username = document.getElementById("editUsername").value;
+      const newUsername = document.getElementById("newUsername").value;
+      const newPassword = document.getElementById("newPassword").value;
+      const result = await fetch(`/user/edit/${username}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: newUsername, password: newPassword })
+      });
+      const response = await result.json();
+      document.getElementById("editResult").textContent = response.message;
+    }
+
+    // Function to delete user
+    async function deleteUser() {
+      const username = document.getElementById("deleteUsername").value;
+      const result = await fetch(`/user/delete/${username}`, {
+        method: "DELETE"
+      });
+      const response = await result.json();
+      document.getElementById("deleteResult").textContent = response.message;
+    }
+  </script>
+</body>
+</html>
+

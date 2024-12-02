@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetLinker - Pet Marketplaces</title>
+    <link rel="stylesheet" href="marketplaces.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Welcome to PetLinker - Pet Marketplaces</h1>
+            <p>Explore pet marketplaces near you</p>
+        </header>
+
+        <section class="search-section">
+            <input type="text" id="location-input" placeholder="Enter location (e.g., Cairo)">
+            <button onclick="getMarketplaces()">Search Marketplaces</button>
+        </section>
+
+        <section id="marketplace-list" class="marketplace-list">
+            <!-- Marketplaces will be listed here -->
+        </section>
+    </div>
+
+    <script>
+        function getMarketplaces() {
+            const location = document.getElementById('location-input').value;
+            const url = location ? `/api/marketplace/marketplaces?location=${location}` : '/api/marketplace/marketplaces';
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => displayMarketplaces(data))
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Something went wrong!');
+                });
+        }
+
+        function displayMarketplaces(marketplaces) {
+            const marketplaceList = document.getElementById('marketplace-list');
+            marketplaceList.innerHTML = '';  // Clear previous results
+
+            if (Array.isArray(marketplaces) && marketplaces.length > 0) {
+                marketplaces.forEach(store => {
+                    const storeCard = document.createElement('div');
+                    storeCard.classList.add('store-card');
+
+                    storeCard.innerHTML = `
+                        <h3>${store.store_name}</h3>
+                        <p><strong>Location:</strong> ${store.location}</p>
+                        <p><strong>Contact:</strong> ${store.contact_info}</p>
+                        <p><strong>Products:</strong> ${store.products}</p>
+                        <p><strong>Description:</strong> ${store.description}</p>
+                        <p><strong>Opening Hours:</strong> ${store.opening_hours}</p>
+                        <p><strong>Payment Methods:</strong> ${store.payment_methods}</p>
+                        <p><strong>Rating:</strong> ${store.rating} / 5</p>
+                    `;
+
+                    marketplaceList.appendChild(storeCard);
+                });
+            } else {
+                marketplaceList.innerHTML = '<p>No pet marketplaces found. Try expanding your search radius.</p>';
+            }
+        }
+    </script>
+</body>
+</html>
