@@ -20,8 +20,6 @@ conn = pyodbc.connect('DRIVER={ODBC Driver 18 for SQL Server};SERVER=FaridaAli\S
         cursor.execute("SELECT 1 FROM UserProfiles WHERE Username = ?", (Username,))
         if cursor.fetchone():
             return {"success": False, "message": "Username already exists."}
-
-        # Insert user into the database
         cursor.execute("INSERT INTO UserProfiles (Username, Pass_word) VALUES (?, ?)", (Username, Pass_word))
         conn.commit()
         return {"success": True, "message": "User created successfully."}
