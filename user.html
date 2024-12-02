@@ -8,8 +8,6 @@
 </head>
 <body>
   <h1>User Management System</h1>
-
-  <!-- Registration Form -->
   <h2>Create New Account</h2>
   <form id="registerForm">
     Username: <input type="text" id="regUsername" required><br>
@@ -19,8 +17,6 @@
   <p id="registerResult"></p>
 
   <hr>
-
-  <!-- Login Form -->
   <h2>Login</h2>
   <form id="loginForm">
     Username: <input type="text" id="loginUsername" required><br>
@@ -30,8 +26,6 @@
   <p id="loginResult"></p>
 
   <hr>
-
-  <!-- Edit Account Form -->
   <h2>Edit Account</h2>
   <form id="editForm">
     Username: <input type="text" id="editUsername" required><br>
@@ -43,7 +37,6 @@
 
   <hr>
 
-  <!-- Delete Account Form -->
   <h2>Delete Account</h2>
   <form id="deleteForm">
     Username: <input type="text" id="deleteUsername" required><br>
@@ -52,7 +45,6 @@
   <p id="deleteResult"></p>
 
   <script>
-    // Function to register user
     async function registerUser() {
       const username = document.getElementById("regUsername").value;
       const password = document.getElementById("regPassword").value;
