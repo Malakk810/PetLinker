@@ -69,8 +69,6 @@
       const response = await result.json();
       document.getElementById("loginResult").textContent = response.message;
     }
-
-    // Function to edit user
     async function editUser() {
       const username = document.getElementById("editUsername").value;
       const newUsername = document.getElementById("newUsername").value;
@@ -84,7 +82,6 @@
       document.getElementById("editResult").textContent = response.message;
     }
 
-    // Function to delete user
     async function deleteUser() {
       const username = document.getElementById("deleteUsername").value;
       const result = await fetch(`/user/delete/${username}`, {
