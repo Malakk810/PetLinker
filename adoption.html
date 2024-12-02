@@ -37,7 +37,7 @@
         async function submitAdoptionRequest() {
             const petId = document.getElementById("adoptPetId").value;
             const username = document.getElementById("adoptUsername").value;
-            const answers = [1, 2, 3];  // Example answers for testing
+            const answers = [1, 2, 3]; 
             const response = await fetch('/adopt', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
