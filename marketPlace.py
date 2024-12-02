@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from services.marketplace_service import MarketplaceService
+from marketplaceServices import MarketplaceService
 
 # Create the blueprint for marketplace routes
 marketplace_bp = Blueprint("marketplace", __name__)
@@ -7,16 +7,17 @@ marketplace_service = MarketplaceService()
 
 @marketplace_bp.route("/marketplaces", methods=["GET"])
 def get_all_pet_marketplaces():
-    # Get location from query parameters
-    location = request.args.get('location')
+#     # Get location from query parameters
+#     location = request.args.get('location')
     
-    # Get the pet marketplaces from the service
-    marketplaces = marketplace_service.get_pet_marketplaces(location)
+#     # Get the pet marketplaces from the service
+#     marketplaces = marketplace_service.get_pet_marketplaces(location)
     
-    if isinstance(marketplaces, str):  # Error message case
-        return jsonify({"message": marketplaces}), 404
+#     if isinstance(marketplaces, str):  # Error message case
+#         return jsonify({"message": marketplaces}), 404
 
-    return jsonify(marketplaces)
+#     return jsonify(marketplaces)
+    return "marketplace"
 
 @marketplace_bp.route("/marketplaces/sample", methods=["POST"])
 def insert_sample_marketplaces():
