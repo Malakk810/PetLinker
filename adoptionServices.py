@@ -1,5 +1,5 @@
 import pyodbc
-from services.adoptionQuizService import AdoptionQuizService  # Import the AdoptionQuizService
+from services.adoptionQuizService import AdoptionQuizService
 
 class AdoptionService:
     def __init__(self):
@@ -12,9 +12,8 @@ class AdoptionService:
             'TrustServerCertificate=yes'
         )
         self.cursor = self.conn.cursor()
-        self.quiz_service = AdoptionQuizService()  # Instantiate the AdoptionQuizService
+        self.quiz_service = AdoptionQuizService()
 
-    # Fetch all available pets
     def get_all_pets(self):
         self.cursor.execute("""
             SELECT Licence_number, Gender, Age, Health_Condition, Type_, Status_, Location 
@@ -27,7 +26,6 @@ class AdoptionService:
              "Type_": row[4], "Status_": row[5], "Location": row[6]} for row in pets
         ]
 
-    # Fetch pet details by pet ID
     def get_pet_by_id(self, pet_id):
         self.cursor.execute("SELECT * FROM pets WHERE Licence_number=?", pet_id)
         pet = self.cursor.fetchone()
@@ -42,11 +40,8 @@ class AdoptionService:
             }
         return None
 
-    # Submit adoption request after verifying the quiz result
     def submit_adoption_request(self, pet_id, username, answers):
-        # Use the quiz service to check the result
         quiz_result = self.quiz_service.ask_adoption_quiz(answers)
-
         if quiz_result:  # Only proceed with adoption if the quiz is passed
             # Update pet status to 'Adopted'
             self.cursor.execute("UPDATE Pets SET Status_='Adopted' WHERE Licence_number=?", pet_id)
