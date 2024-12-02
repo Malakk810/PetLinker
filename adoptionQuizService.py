@@ -18,13 +18,12 @@ class AdoptionQuizService:
 
     def ask_adoption_quiz(self, username, answers):
         score = 0
-        result=False
         for i, answer in enumerate(answers):
             if answer - 1 == self.correct_answers[i]:
                 score += 1
                 if score >= 3:
-                    result=True
-        return result
+                    return True
+        return False
 
     # def choose_adoption(self, username):
     #     # Assume the user opts to take the quiz
