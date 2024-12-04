@@ -1,7 +1,7 @@
 import pyodbc  # library to connect with MSSQL
 class UserService:
     def __init__(self):
-        self.db = self.get_db_connection()
+        self.db = self.get_db_connection()  #object for database connection
 
     def get_db_connection(self):
         return pyodbc.connect(
@@ -10,15 +10,16 @@ conn = pyodbc.connect('DRIVER={ODBC Driver 18 for SQL Server};SERVER=FaridaAli\S
 
     
     def create_user(self, data):
-        Username = data.get("username")
+        Username = data.get("username")   #extract the username and password from the data inserted to save it on the database
         Pass_word = data.get("password")
-        if not Username or not Pass_word:
-            return {"success": False, "message": "Username and password are required."}
+        if not Username or not Pass_word:   #if empty
+            return {"success": False, "message": "Username and password are required."}  #success value is here false
         
-        conn = self.db
-        cursor = conn.cursor()
-        cursor.execute("SELECT 1 FROM UserProfiles WHERE Username = ?", (Username,))
-        if cursor.fetchone():
+        conn = self.db  #database connection from the object
+        cursor = conn.cursor()  #pointer to let us use database commands and interact with it
+                       #returns 1 if userame already exists
+        cursor.execute("SELECT 1 FROM UserProfiles WHERE Username = ?", (Username,))   #execute the query to make sure if the username exists on the Userprofile table
+        if cursor.fetchone():        #if yes it exists             #? indicates where will the username be inserted, replace the ? with the actual username
             return {"success": False, "message": "Username already exists."}
         cursor.execute("INSERT INTO UserProfiles (Username, Pass_word) VALUES (?, ?)", (Username, Pass_word))
         conn.commit()
