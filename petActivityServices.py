@@ -1,19 +1,21 @@
 import pyodbc
 
-# Database connection settings
-DATABASE = 'PetLinker'  # Your database name
-SERVER = 'FaridaAli\SQLEXPRESS'  # Your server name
-UID = 'flask_user'  # Your database username
-PWD = 'Flask!User1234'  # Your database password
-
-# Connection string for SQL Server
-CONNECTION_STRING = f'DRIVER={{ODBC Driver 18 for SQL Server}};SERVER={SERVER};DATABASE={DATABASE};UID={UID};PWD={PWD};TrustServerCertificate=yes'
-
 class PetActivityService:
     def __init__(self):
-        # Establish the ODBC connection
-        self.conn = pyodbc.connect(CONNECTION_STRING)
-        self.cursor = self.conn.cursor()
+        try:
+            self.conn = pyodbc.connect(
+                'DRIVER={ODBC Driver 18 for SQL Server};'
+                'SERVER=FaridaAli\\SQLEXPRESS;'  
+                'DATABASE=PetLinker;'
+                'UID=flask_user;'
+                'PWD=Flask!User1234;'
+                'TrustServerCertificate=yes'
+            )
+            self.cursor = self.conn.cursor()
+            self.quiz_service = PetActivityService()  
+        except pyodbc.Error as e:
+            print(f"Error connecting to the database: {e}")
+            raise
 
     def insert_sample_activities(self):
         activity_data = [
@@ -22,13 +24,12 @@ class PetActivityService:
             ("Pet Training Workshop", "Workshop", "Giza", "A training session for dogs hosted by certified trainers.", "2024-12-04 10:00:00", "012-3456-7890", 5),
         ]
 
-        # Insert each activity into the 'activities' table
+        
         self.cursor.executemany("""
         INSERT INTO activities (activity_name, activity_type, location, description, date_time, contact_info, rating)
         VALUES (?, ?, ?, ?, ?, ?, ?);
         """, activity_data)
 
-        # Commit changes
         self.conn.commit()
 
     def find_pet_activities(self, location, activity_type=None):
@@ -87,6 +88,5 @@ class PetActivityService:
         ]
 
     def close_connection(self):
-        # Close the cursor and connection when done
         self.cursor.close()
         self.conn.close()
