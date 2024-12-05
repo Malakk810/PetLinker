@@ -6,7 +6,7 @@ adoption_bp = Blueprint("adoption", __name__)
 adoption_service = AdoptionService()
 adoptionQuizService = AdoptionQuizService()
 
-@adoption_bp.route('/pets', methods=['POST'])
+@adoption_bp.route('/pets', methods=['GET'])
 def browse_pets_for_adoption():
     pets = adoption_service.get_all_pets()
     return jsonify(pets)
