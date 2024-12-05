@@ -12,7 +12,7 @@ class PetActivityService:
                 'TrustServerCertificate=yes'
             )
             self.cursor = self.conn.cursor()
-            self.quiz_service = PetActivityService()  
+            self.activity_service = PetActivityService()  
         except pyodbc.Error as e:
             print(f"Error connecting to the database: {e}")
             raise
