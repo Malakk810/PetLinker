@@ -12,7 +12,7 @@ class MarketplaceService:
                 'TrustServerCertificate=yes'
             )
             self.cursor = self.conn.cursor()
-            self.quiz_service = MarketplaceService()  
+            self.marketplace_service = MarketplaceService()  
         except pyodbc.Error as e:
             print(f"Error connecting to the database: {e}")
             raise
